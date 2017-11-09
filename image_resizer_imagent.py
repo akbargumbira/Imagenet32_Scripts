@@ -47,9 +47,7 @@ def str2alg(str):
 # Takes in_dir, out_dir and alg as strings
 # resize images from in_dir using algorithm deduced from
 # alg string and puts them to "out_dir/alg/" folder
-def resize_img_folder(in_dir, out_dir, alg):
-    print('Folder %s' % in_dir)
-
+def resize_img_folder(in_dir, out_dir, alg, size):
     alg_val = str2alg(alg)
 
     if alg_val is None:
@@ -69,9 +67,7 @@ def resize_img_folder(in_dir, out_dir, alg):
                 im = im.convert(mode="RGB")
 
             im_resized = im.resize((size, size), alg_val)
-            # Get rid of extension (.jpg or other)
-            filename = os.path.splitext(filename)[0]
-            im_resized.save(os.path.join(out_dir, filename + '.png'))
+            im_resized.save(os.path.join(out_dir, filename))
         except OSError as err:
             print("This file couldn't be read as an image")
             with open("log.txt", "a") as f:
@@ -101,11 +97,18 @@ if __name__ == '__main__':
                 if i % every_nth is 0 or repeat is True:
                     r = pool.apply_async(
                         func=resize_img_folder,
-                        args=[os.path.join(in_dir, folder), os.path.join(current_out_dir, folder), alg])
+                        args=[
+                            os.path.join(in_dir, folder),
+                            os.path.join(current_out_dir, folder),
+                            alg,
+                            size
+                        ]
+                    )
 
         else:
             print('For folder %s' % in_dir)
-            resize_img_folder(in_dir=in_dir, out_dir=current_out_dir, alg=alg)
+            resize_img_folder(
+                in_dir=in_dir, out_dir=current_out_dir, alg=alg, size=size)
     pool.close()
     pool.join()
     print("Finished.")
